@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.droidtechnician.learner.entities.Product;
@@ -27,16 +30,18 @@ public class ProductController {
 	@Autowired
 	private ProductRepository productRepo;
 	
-	@GetMapping
-	public List<Product> getAllProducts() {
-		Iterable<Product> productItr = productRepo.findAll();
-		List<Product> prodList = new ArrayList<Product>();
-		for (Product prod: productItr) {
-			prodList.add(prod);
-		}
-		
-		return prodList;
-	}
+	Logger logger = LoggerFactory.getLogger(ProductController.class);
+	
+//	@GetMapping
+//	public List<Product> getAllProducts() {
+//		Iterable<Product> productItr = productRepo.findAll();
+//		List<Product> prodList = new ArrayList<Product>();
+//		for (Product prod: productItr) {
+//			prodList.add(prod);
+//		}
+//		
+//		return prodList;
+//	}
 	
 	@PostMapping
 	public ResponseEntity<?> insertProduct(@RequestBody Product product) {
@@ -69,6 +74,26 @@ public class ProductController {
 		}
 		
 		return ResponseEntity.badRequest().build();
+	}
+	
+	@RequestMapping(method = RequestMethod.GET)
+	public List<Product> findByDetails(
+			@RequestParam(name = "name", required = false) String name) {
+		logger.info("Name: " + name);
+		if (null != name) {
+			logger.info("Here in IF: " + name);
+			ArrayList<Product> prodList = productRepo.findByNameIgnoreCase(name);
+			prodList.forEach(prod -> logger.info(prod.getName()));
+			return prodList;
+		}
+		
+		Iterable<Product> productItr = productRepo.findAll();
+		List<Product> prodList = new ArrayList<Product>();
+		for (Product prod: productItr) {
+			prodList.add(prod);
+		}
+		
+		return prodList;
 	}
 	
 
